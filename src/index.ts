@@ -5,6 +5,8 @@ import { config } from './config.js';
 import { interactionManager } from './manager/interaction.manager.js';
 import { IsabelleModule } from './modules/bot-module.js';
 import { HotPotato } from './modules/hot-potato/hot-potato.module.js';
+import { Coiffeur } from './modules/coiffeur/coiffeur.module.js';
+import { CountDown } from './modules/countdown/countdown.module.js';
 
 export const client = new Client({
   intents: [
@@ -17,6 +19,13 @@ export const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+
+const MODULES: IsabelleModule[] = [
+  new CoreModule(),
+  new HotPotato(),
+  new Coiffeur(),
+  new CountDown(),
+];
 
 client.once('ready', () => {
   console.log('Discord bot is ready! 🤖');
@@ -69,8 +78,6 @@ client.on('interactionCreate', (interaction) => {
 
 await client.login(config.DISCORD_TOKEN);
 
-const MODULES: IsabelleModule[] = [new CoreModule(), new HotPotato()];
-
 function registerModules() {
   for (const module of MODULES) {
     console.log(`[Modules] Initializing module ${module.name}`);
@@ -80,3 +87,18 @@ function registerModules() {
     console.log(`[Modules] Module ${module.name} initialized.`);
   }
 }
+
+commandManager
+  .deployCommandsForGuild(
+    config.DISCORD_GUILD_ID,
+    commandManager.getIsabelleCommandsAsSlashBuilderArray(),
+  )
+  .then(() => {
+    console.log('Successfully deployed commands for the guild.');
+  })
+  .catch((error: unknown) => {
+    console.error(
+      'An error occurred while deploying commands for the guild.',
+      error,
+    );
+  });
